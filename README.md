@@ -27,7 +27,7 @@ Dataset yang digunakan berasal dari Kaggle: [Crop Production Dataset](https://ww
 
 ## 🔧 Repository <a id="repository"></a>
 
-Repository proyek dapat ditemukan di GitHub:[excelim/uapmachinelearning]()
+Repository proyek dapat ditemukan di GitHub:[excelim/uapmachinelearning](https://github.com/Excelim/uapmachinelearning)
 
 ## 📚 Langkah Instalasi <a id="langkah-instalasi"></a>
 
