@@ -58,6 +58,18 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek ini secara lokal:
    ```bash
    pip install -r requirements.txt
    ```
+5. Unduh Model:
+
+   [Model .pkl](https://drive.google.com/drive/folders/1Ps75rw-16Xkdd7FhtUWbup-2w4IYejfr?usp=sharing)
+
+6. Jalankan aplikasi Streamlit:
+
+   ```bash
+   streamlit run app.py
+   ```
+
+---
+
 ## 🔢 Deskripsi Model <a id="deskripsi-model"></a>
 
 Proyek ini menggunakan dua model:
