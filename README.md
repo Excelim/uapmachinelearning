@@ -12,8 +12,7 @@
 3. [Repository](#repository)
 4. [Langkah Instalasi](#langkah-instalasi)
 5. [Deskripsi Model](#deskripsi-model)
-6. [Hasil dan Analisis](#hasil-dan-analisis)
-7. [Kontak](#kontak)
+6. [Kontak](#kontak)
 
 ---
 
@@ -59,4 +58,14 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek ini secara lokal:
    ```bash
    pip install -r requirements.txt
    ```
+## 🔢 Deskripsi Model <a id="deskripsi-model"></a>
+
+Proyek ini menggunakan dua model:
+1. **VGG16 (Fine-Tuning)**: Model VGG16 yang sudah dilatih sebelumnya digunakan sebagai dasar dan disesuaikan untuk tugas klasifikasi penyakit daun palem.
+2. **CNN Kustom**: Model CNN sederhana yang dibangun dari awal untuk mengklasifikasikan daun palem.
+
+## 📢 Kontak <a id="kontak"></a>
+
+Terima kasih telah menggunakan aplikasi ini! Jika Anda memiliki pertanyaan atau saran, jangan ragu untuk membuka isu di repository GitHub.
+
 
