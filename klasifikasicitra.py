@@ -1,135 +1,135 @@
 import streamlit as st
-import tensorflow as tf
-from tensorflow.keras.utils import load_img, img_to_array
-from pathlib import Path
-import numpy as np
 from PIL import Image
-import io
+import tensorflow as tf
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 
-# Configure Streamlit page
-st.set_page_config(
-    page_title="Image Classification: VGG16 and Custom CNN",
-    page_icon="🖼️",
-    layout="wide",
-)
+# Class labels
+class_labels = ["Bug", "Dubas", "Healthy", "Honey"]
 
-# Header section
-st.markdown(
-    """
-    <div style="text-align: center;">
-        <h1 style="color: #4CAF50;">🖼️ Image Classification</h1>
-        <p style="font-size: 18px; color: #555;">Upload an image to get predictions using your VGG16 and Custom CNN models.</p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+def load_models():
+    """Load VGG16 and CNN models from disk."""
+    vgg16_model = tf.keras.models.load_model('D:/webmachinelearningmluap/src/model/vgg16_model.keras')
+    cnn_model = tf.keras.models.load_model('D:/webmachinelearningmluap/src/model/cnn_model.keras')
+    return vgg16_model, cnn_model
 
-# Sidebar for user input
-st.sidebar.header("Model Selection")
-model_options = ["VGG16", "Custom CNN", "Both"]
-model_choice = st.sidebar.radio("Choose a model:", model_options)
+def predict(image, model):
+    """Predict the class of the uploaded image using the selected model."""
+    # Preprocess the image
+    image = image.resize((224, 224))  # Resize to the input size of the model
+    image = np.array(image) / 255.0  # Normalize the image
+    image = np.expand_dims(image, axis=0)  # Add batch dimension
 
-# File uploader
-upload = st.file_uploader("Upload an image (PNG, JPG, JPEG):", type=['png', 'jpg', 'jpeg'])
+    # Perform prediction
+    predictions = model.predict(image)[0]  # Get predictions for the first batch
+    predicted_class = np.argmax(predictions)
+    confidence = predictions[predicted_class]
+    return predicted_class, confidence, predictions
 
-# Function to load VGG16 model
-@st.cache_resource
-def load_vgg16_model():
-    model_path = Path("D:/webmachinelearning/src/model/vgg16_model.keras")
-    return tf.keras.models.load_model(str(model_path))
+def plot_confidence_summary(class_labels, all_predictions):
+    """Generate a bar plot for average confidence by class."""
+    # Average predictions across all uploaded images
+    avg_predictions = np.mean(all_predictions, axis=0)
 
+    # Plot bar chart
+    fig, ax = plt.subplots()
+    ax.bar(class_labels, avg_predictions, color="skyblue")
+    ax.set_ylabel("Average Confidence")
+    ax.set_title("Average Confidence by Class")
+    ax.set_ylim(0, 1)  # Confidence is between 0 and 1
+    plt.xticks(rotation=45)
+    st.pyplot(fig)
 
-# Function to load custom CNN model
-@st.cache_resource
-def load_custom_model():
-    model_path = Path("D:\webmachinelearning\src\model\cnn_model.keras")  # Adjust path to your .keras model
-    return tf.keras.models.load_model(str(model_path))
+# Load the models
+vgg16_model, cnn_model = load_models()
 
-# Prediction function
-# Prediction function for both models
-def predict_image(uploaded_image, vgg16_model=None, custom_cnn_model=None):
-    # Normalisasi input
-    preprocess_input = lambda x: x / 255.0  # Normalisasi untuk CNN custom
-    class_names = ['Bug', 'Dubas', 'Healthy', 'Honey']  # Sesuaikan dengan nama kelas Anda
+def main():
+    st.set_page_config(page_title="Prediksi Penyakit Daun Palam", layout="wide")
 
-    try:
-        # Load dan proses gambar
-        img = load_img(uploaded_image, target_size=(224, 224))
-        img_array = img_to_array(img)
-        img_array = preprocess_input(img_array)
-        img_array = np.expand_dims(img_array, axis=0)
+    # Add custom CSS to change background color to soft pink pastel
+    st.markdown(
+        """
+        <style>
+        body {
+            background-color: #FADADD;  /* Soft Pink Pastel */
+        }
+        .reportview-container {
+            background-color: #FADADD;  /* Soft Pink Pastel */
+        }
+        .sidebar .sidebar-content {
+            background-color: #FADADD;  /* Soft Pink Pastel */
+        }
+        </style>
+        """, 
+        unsafe_allow_html=True
+    )
 
-        results = []
+    # Sidebar menu
+    with st.sidebar:
+        st.title("Select Options")
+        selected_model = st.radio(
+            "Choose a Model:",
+            ('VGG16', 'CNN')
+        )
+        model = vgg16_model if selected_model == 'VGG16' else cnn_model
 
-        # Prediksi dengan VGG16 model jika dipilih
-        if vgg16_model:
-            vgg16_predictions = vgg16_model.predict(img_array)
-            vgg16_probabilities = tf.nn.softmax(vgg16_predictions[0])
-            vgg16_top_class = np.argmax(vgg16_probabilities)
-            results.append(("VGG16", class_names[vgg16_top_class], float(vgg16_probabilities[vgg16_top_class])))
+    st.title("Prediksi Penyakit Daun Palam")
+    st.write("Upload up to three images of money plants to predict their condition.")
 
-        # Prediksi dengan Custom CNN model jika dipilih
-        if custom_cnn_model:
-            custom_predictions = custom_cnn_model.predict(img_array)
-            custom_probabilities = tf.nn.softmax(custom_predictions[0])
-            custom_top_class = np.argmax(custom_probabilities)
-            results.append(("Custom CNN", class_names[custom_top_class], float(custom_probabilities[custom_top_class])))
+    # Multi-upload images
+    uploaded_files = st.file_uploader(
+        "Upload up to 3 Images",
+        accept_multiple_files=True,
+        type=["jpg", "jpeg", "png"],
+        help="You can upload up to three images.",
+    )
 
-        return results
-    
-    except Exception as e:
-        st.error(f"An error occurred while processing the image: {e}")
-        return []
+    if uploaded_files:
+        # Limit to three images
+        uploaded_files = uploaded_files[:3]
 
-# Main content
-if st.button("Predict"):
-    if upload is not None:
-        # Check for correct file type (PNG, JPG, JPEG)
-        try:
-            img = Image.open(upload)
-            img_format = img.format.lower()
-            if img_format not in ['png', 'jpg', 'jpeg']:
-                st.error("Invalid image format. Please upload a PNG, JPG, or JPEG image.")
-            else:
-                col1, col2 = st.columns([1, 2])
+        # Display uploaded images
+        st.write("Uploaded Images:")
+        for uploaded_file in uploaded_files:
+            image = Image.open(uploaded_file)
+            st.image(image, caption=f"{uploaded_file.name}", use_container_width=True)
 
-                with col1:
-                    st.image(upload, caption="Uploaded Image", use_container_width=True)
+        # Button to trigger prediction
+        if st.button("Predict"):
+            # Initialize summary table and all_predictions list
+            summary_data = []
+            all_predictions = []
 
-                with col2:
-                    st.subheader("Prediction Results")
+            for uploaded_file in uploaded_files:
+                # Open image and make predictions
+                image = Image.open(uploaded_file)
+                predicted_class, confidence, predictions = predict(image, model)
 
-                    with st.spinner("Loading models and processing image..."):
-                        results = []
-                        
-                        # Load both models if needed
-                        if model_choice in ["VGG16", "Both"]:
-                            vgg16_model = load_vgg16_model()
-                            vgg16_results = predict_image(upload, vgg16_model=vgg16_model)
-                            results.extend(vgg16_results)
+                # Append results to the summary table
+                summary_data.append({
+                    "Image Name": uploaded_file.name,
+                    "Predicted Class": class_labels[predicted_class],
+                    "Confidence": f"{confidence:.2f}"
+                })
 
-                        if model_choice in ["Custom CNN", "Both"]:
-                            custom_model = load_custom_model()
-                            custom_results = predict_image(upload, custom_cnn_model=custom_model)
-                            results.extend(custom_results)
+                # Collect predictions for plotting
+                all_predictions.append(predictions)
 
-                        for model_name, label, prob in results:
-                            st.write(f"### Results from {model_name}:")
-                            st.write(f"**{label}**: {prob:.2%}")
+            # Display summary table
+            st.markdown("### Summary of Predictions")
+            summary_df = pd.DataFrame(summary_data)  # Create DataFrame for summary
+            st.table(summary_df)
 
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
-    else:
-        st.error("Please upload an image first!")
+            # Plot confidence summary
+            st.markdown("### Average Confidence by Class")
+            plot_confidence_summary(class_labels, all_predictions)
 
+    # Footer section with additional explanation or links
+    st.markdown("---")
+    st.markdown(
+        "Developed with ❤ by excelim (#). Powered by Streamlit and TensorFlow."
+    )
 
-# Footer
-st.markdown(
-    """
-    <hr style='border:1px solid #4CAF50'>
-    <div style='text-align: center; font-size: 14px; color: #888;'>
-        Built with ❤️ using Streamlit and TensorFlow
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+if __name__ == "__main__":
+    main()
