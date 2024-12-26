@@ -23,7 +23,7 @@ Repositori ini berisi proyek pembelajaran mesin untuk mengklasifikasikan penyaki
 ---
 ## 📊 Dataset <a id="dataset"></a>
 
-Dataset yang digunakan berasal dari Kaggle: [Crop Production Dataset](https://www.kaggle.com/datasets/warcoder/palm-leaves-dataset).
+Dataset yang digunakan berasal dari Kaggle: [Production Dataset](https://www.kaggle.com/datasets/warcoder/palm-leaves-dataset).
 
 ## 🔧 Repository <a id="repository"></a>
 
